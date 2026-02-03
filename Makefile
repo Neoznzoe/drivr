@@ -41,25 +41,25 @@ install: ## Installe toutes les dépendances
 
 db-up: ## Lance PostgreSQL via Docker
 	@echo "$(YELLOW)Démarrage de PostgreSQL...$(NC)"
-	docker-compose up -d postgres
+	docker compose up -d postgres
 	@echo "$(GREEN)PostgreSQL démarré sur le port $(POSTGRES_PORT:-5432)$(NC)"
 
 db-down: ## Arrête PostgreSQL
 	@echo "$(YELLOW)Arrêt de PostgreSQL...$(NC)"
-	docker-compose down
+	docker compose down
 	@echo "$(GREEN)PostgreSQL arrêté$(NC)"
 
 db-reset: ## Reset complet de la base de données
 	@echo "$(YELLOW)Reset de la base de données...$(NC)"
-	docker-compose down -v
-	docker-compose up -d postgres
+	docker compose down -v
+	docker compose up -d postgres
 	@echo "$(GREEN)Base de données réinitialisée$(NC)"
 
 db-logs: ## Affiche les logs PostgreSQL
-	docker-compose logs -f postgres
+	docker compose logs -f postgres
 
 db-shell: ## Ouvre un shell PostgreSQL
-	docker-compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+	docker compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 # ============================================
 # API
@@ -102,17 +102,17 @@ mobile-lint: ## Lint du code mobile
 
 docker-up: ## Lance tous les services Docker
 	@echo "$(YELLOW)Démarrage de tous les services...$(NC)"
-	docker-compose up -d
+	docker compose up -d
 	@echo "$(GREEN)Services démarrés$(NC)"
 
 docker-down: ## Arrête tous les services Docker
-	docker-compose down
+	docker compose down
 
 docker-logs: ## Affiche les logs de tous les services
-	docker-compose logs -f
+	docker compose logs -f
 
 docker-build: ## Build les images Docker
-	docker-compose build
+	docker compose build
 
 # ============================================
 # Development
@@ -120,7 +120,7 @@ docker-build: ## Build les images Docker
 
 dev: ## Lance la BDD + l'API (pour le développement)
 	@echo "$(YELLOW)Démarrage de l'environnement de dev...$(NC)"
-	docker-compose up -d postgres
+	docker compose up -d postgres
 	@sleep 2
 	@echo "$(GREEN)PostgreSQL démarré. Lancez 'make api-dev' dans un autre terminal.$(NC)"
 

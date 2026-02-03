@@ -1,10 +1,13 @@
-import { V4 } from 'paseto';
+import { V3 } from 'paseto';
 import * as argon2 from 'argon2';
+import { createSecretKey, KeyObject } from 'crypto';
 import { config } from '../config/index.js';
 import { UnauthorizedError } from './errors.js';
 
-// Générer une clé secrète pour PASETO v4.local
-const secretKey = Buffer.from(config.pasetoSecretKey.padEnd(32, '0').slice(0, 32));
+// Générer une clé secrète pour PASETO v3.local (doit être un KeyObject de 32 bytes)
+const secretKey: KeyObject = createSecretKey(
+  Buffer.from(config.pasetoSecretKey.padEnd(32, '0').slice(0, 32))
+);
 
 export interface TokenPayload {
   sub: string; // user id
@@ -42,7 +45,7 @@ function parseExpiration(expiresIn: string): number {
 export async function generateAccessToken(payload: Omit<TokenPayload, 'type'>): Promise<string> {
   const expiresIn = parseExpiration(config.accessTokenExpiresIn);
 
-  return V4.encrypt(
+  return V3.encrypt(
     { ...payload, type: 'access' },
     secretKey,
     {
@@ -54,7 +57,7 @@ export async function generateAccessToken(payload: Omit<TokenPayload, 'type'>): 
 export async function generateRefreshToken(payload: Omit<TokenPayload, 'type'>): Promise<string> {
   const expiresIn = parseExpiration(config.refreshTokenExpiresIn);
 
-  return V4.encrypt(
+  return V3.encrypt(
     { ...payload, type: 'refresh' },
     secretKey,
     {
@@ -65,7 +68,7 @@ export async function generateRefreshToken(payload: Omit<TokenPayload, 'type'>):
 
 export async function verifyToken(token: string): Promise<DecodedToken> {
   try {
-    const payload = await V4.decrypt<DecodedToken>(token, secretKey);
+    const payload = await V3.decrypt<DecodedToken>(token, secretKey);
     return payload;
   } catch {
     throw new UnauthorizedError('Token invalide ou expiré');
