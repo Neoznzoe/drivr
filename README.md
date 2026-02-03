@@ -29,10 +29,9 @@
 git clone https://github.com/votre-username/drivr.git
 cd drivr
 
-# 2. Copier les fichiers d'environnement
-cp .env.example .env
-cp api/.env.example api/.env
-cp mobile/.env.example mobile/.env
+# 2. Configurer l'environnement (un seul fichier .env à la racine)
+make setup
+# ou manuellement : cp .env.example .env
 
 # 3. Installer les dépendances
 make install
@@ -55,7 +54,9 @@ make mobile-dev
 
 ```bash
 make help          # Affiche toutes les commandes disponibles
+make setup         # Configure le projet (crée .env depuis .env.example)
 make install       # Installe toutes les dépendances (api + mobile)
+make dev           # Lance la BDD et affiche les instructions
 ```
 
 ### Base de données
@@ -289,41 +290,34 @@ SELECT * FROM users;
 
 ## Variables d'environnement
 
-### `.env` (racine)
+Un seul fichier `.env` à la racine du projet configure tout :
 
 ```env
+# ===========================================
+# DRIVR - Configuration unique
+# ===========================================
+
 # Database
 POSTGRES_USER=drivr
 POSTGRES_PASSWORD=drivr_secret
 POSTGRES_DB=drivr
+POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 
-# API
+# API Server
 API_PORT=3000
 NODE_ENV=development
-JWT_SECRET=your-super-secret-key-change-in-production
-PASETO_SECRET_KEY=your-paseto-secret-key-32-bytes-min
-```
 
-### `api/.env`
-
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL=postgres://drivr:drivr_secret@localhost:5432/drivr
-JWT_SECRET=your-jwt-secret-key-min-32-chars
-PASETO_SECRET_KEY=your-paseto-secret-key-32-bytes-min
+# Authentication (PASETO tokens)
+PASETO_SECRET_KEY=your-paseto-secret-key-32-bytes-minimum-change-this
 ACCESS_TOKEN_EXPIRES_IN=15m
 REFRESH_TOKEN_EXPIRES_IN=7d
-```
 
-### `mobile/.env`
-
-```env
+# Mobile App - URL de l'API
 EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
 ```
 
-> ⚠️ **Note** : Pour tester sur un appareil physique, remplacez `localhost` par l'IP de votre machine (ex: `http://192.168.1.100:3000/api/v1`).
+> ⚠️ **Note** : Pour tester sur un appareil physique, remplacez `localhost` par l'IP de votre machine dans `EXPO_PUBLIC_API_URL` (ex: `http://192.168.1.100:3000/api/v1`).
 
 ---
 
@@ -412,14 +406,15 @@ make db-reset
 # Vérifier que PostgreSQL est lancé
 docker ps
 
-# Vérifier la variable DATABASE_URL dans api/.env
+# Vérifier les variables POSTGRES_* dans le .env racine
+cat .env | grep POSTGRES
 ```
 
 ### L'app mobile ne se connecte pas à l'API
 
 1. Vérifier que l'API est lancée (`curl http://localhost:3000/health`)
 2. Sur appareil physique : remplacer `localhost` par l'IP de votre machine
-3. Vérifier `EXPO_PUBLIC_API_URL` dans `mobile/.env`
+3. Vérifier `EXPO_PUBLIC_API_URL` dans le `.env` racine
 
 ---
 

@@ -1,4 +1,5 @@
 export const config = {
+  // API_URL depuis le .env racine (via EXPO_PUBLIC_API_URL)
   apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
 
   // Tracking GPS

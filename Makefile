@@ -1,4 +1,10 @@
-.PHONY: help install db-up db-down db-reset db-logs api-dev api-build api-test mobile-dev mobile-ios mobile-android lint clean
+.PHONY: help setup install db-up db-down db-reset db-logs db-shell api-dev api-build api-test mobile-dev mobile-ios mobile-android lint clean
+
+# Charger les variables d'environnement du .env racine
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
 
 # Colors
 GREEN  := \033[0;32m
@@ -9,8 +15,18 @@ help: ## Affiche l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
 
 # ============================================
-# Installation
+# Setup
 # ============================================
+
+setup: ## Configuration initiale du projet
+	@echo "$(YELLOW)Configuration du projet...$(NC)"
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "$(GREEN)Fichier .env créé depuis .env.example$(NC)"; \
+	else \
+		echo "$(YELLOW)Fichier .env existe déjà$(NC)"; \
+	fi
+	@echo "$(GREEN)Configuration terminée! Modifiez .env si nécessaire.$(NC)"
 
 install: ## Installe toutes les dépendances
 	@echo "$(YELLOW)Installation des dépendances API...$(NC)"
@@ -26,7 +42,7 @@ install: ## Installe toutes les dépendances
 db-up: ## Lance PostgreSQL via Docker
 	@echo "$(YELLOW)Démarrage de PostgreSQL...$(NC)"
 	docker-compose up -d postgres
-	@echo "$(GREEN)PostgreSQL démarré sur le port 5432$(NC)"
+	@echo "$(GREEN)PostgreSQL démarré sur le port $(POSTGRES_PORT:-5432)$(NC)"
 
 db-down: ## Arrête PostgreSQL
 	@echo "$(YELLOW)Arrêt de PostgreSQL...$(NC)"
@@ -43,7 +59,7 @@ db-logs: ## Affiche les logs PostgreSQL
 	docker-compose logs -f postgres
 
 db-shell: ## Ouvre un shell PostgreSQL
-	docker-compose exec postgres psql -U drivr -d drivr
+	docker-compose exec postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 # ============================================
 # API
@@ -71,10 +87,10 @@ mobile-dev: ## Lance l'app mobile (Expo)
 	@echo "$(YELLOW)Démarrage de l'app mobile...$(NC)"
 	cd mobile && npm start
 
-mobile-ios: ## Lance l'app sur iOS
+mobile-ios: ## Lance l'app sur iOS Simulator
 	cd mobile && npm run ios
 
-mobile-android: ## Lance l'app sur Android
+mobile-android: ## Lance l'app sur Android Emulator
 	cd mobile && npm run android
 
 mobile-lint: ## Lint du code mobile
@@ -97,6 +113,16 @@ docker-logs: ## Affiche les logs de tous les services
 
 docker-build: ## Build les images Docker
 	docker-compose build
+
+# ============================================
+# Development
+# ============================================
+
+dev: ## Lance la BDD + l'API (pour le développement)
+	@echo "$(YELLOW)Démarrage de l'environnement de dev...$(NC)"
+	docker-compose up -d postgres
+	@sleep 2
+	@echo "$(GREEN)PostgreSQL démarré. Lancez 'make api-dev' dans un autre terminal.$(NC)"
 
 # ============================================
 # Utils
